@@ -1,3 +1,4 @@
+#include <iostream>
 #include "Common.h"
 #include "QuadControl.h"
 
@@ -69,13 +70,20 @@ VehicleCommand QuadControl::GenerateMotorCommands(float collThrustCmd, V3F momen
   // You'll need the arm length parameter L, and the drag/thrust ratio kappa
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
+  //std::cout<< momentCmd.x << "    " << momentCmd.y << "    " <<  momentCmd.z << "    " << collThrustCmd << "    " << this->L << "    " << this->kappa << std::endl;
+  float l = this->L / sqrt(2.f);
 
-  cmd.desiredThrustsN[0] = mass * 9.81f / 4.f; // front left
-  cmd.desiredThrustsN[1] = mass * 9.81f / 4.f; // front right
-  cmd.desiredThrustsN[2] = mass * 9.81f / 4.f; // rear left
-  cmd.desiredThrustsN[3] = mass * 9.81f / 4.f; // rear right
+  float c_bar = collThrustCmd;
+  float p_bar = momentCmd.x / l;
+  float q_bar = momentCmd.y / l;
+  float r_bar = -momentCmd.z / this->kappa;
 
-  /////////////////////////////// END STUDENT CODE ////////////////////////////
+  cmd.desiredThrustsN[2] = (c_bar + p_bar - q_bar - r_bar)/4.f;                                               // mass * 9.81f / 4.f; // rear left
+  cmd.desiredThrustsN[3] = (r_bar - p_bar)/2 + cmd.desiredThrustsN[2];                                        // mass * 9.81f / 4.f; // rear right
+  cmd.desiredThrustsN[1] = (c_bar - p_bar)/2 - cmd.desiredThrustsN[3];                                        // mass * 9.81f / 4.f; // front right
+  cmd.desiredThrustsN[0] = c_bar - cmd.desiredThrustsN[1] - cmd.desiredThrustsN[2] - cmd.desiredThrustsN[3];  // mass * 9.81f / 4.f; // front left
+
+//   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
   return cmd;
 }
@@ -97,7 +105,9 @@ V3F QuadControl::BodyRateControl(V3F pqrCmd, V3F pqr)
   V3F momentCmd;
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-
+  V3F error = pqrCmd - pqr;
+  V3F momIn(this->Ixx, this->Iyy, this->Izz);
+  momentCmd = error * this->kpPQR * momIn;
   
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
