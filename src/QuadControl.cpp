@@ -215,7 +215,20 @@ V3F QuadControl::LateralPositionControl(V3F posCmd, V3F velCmd, V3F pos, V3F vel
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
 
+  float velocity = sqrt(vel.x * vel.x + vel.y * vel.y);
+  if (velocity > this->maxSpeedXY)
+  {
+    velCmd = velCmd * this->maxSpeedXY / velocity;          // scale velocity down by the ratio it is over the speed 
+  }
+
+  accelCmd = this->kpPosXY * (posCmd - pos) + this->kpVelXY * (velCmd - vel) + accelCmdFF;
+
+  float targetAccel = sqrt(accelCmd.x * accelCmd.x + accelCmd.y * accelCmd.y);
   
+  if (targetAccel > this->maxAccelXY)
+  {
+    accelCmd = accelCmd * this->maxAccelXY / targetAccel;
+  }
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
