@@ -255,15 +255,6 @@ V3F QuadControl::LateralPositionControl(V3F posCmd, V3F velCmd, V3F pos, V3F vel
   V3F accelCmd = accelCmdFF;
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-     // V3F kpPos;
-  // kpPos.x = kpPosXY;
-  // kpPos.y = kpPosXY;
-  // kpPos.z = 0.f;
-
-  // V3F kpVel;
-  // kpVel.x = kpVelXY;
-  // kpVel.y = kpVelXY;
-  // kpVel.z = 0.f;
   V3F velocity_CMD = kpPosXY * (posCmd - pos);
 
   float velocity_norm = sqrt(velocity_CMD.x * velocity_CMD.x + velocity_CMD.y * velocity_CMD.y);
