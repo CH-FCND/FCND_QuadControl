@@ -205,14 +205,14 @@ float QuadControl::AltitudeControl(float posZCmd, float velZCmd, float posZ, flo
     accel = accel * maxAscentRate / ascentRate;
   }
 
-  float p_term = kpPosZ * z_err;
+  float p_term = this->kpPosZ * z_err;
 
   z_dot_err = velZCmd - velZ;
   integratedAltitudeError += z_err * dt;
 
 
-  float d_term = kpVelZ * z_dot_err + velZ;
-  float i_term = KiPosZ * integratedAltitudeError;
+  float d_term = this->kpVelZ * z_dot_err + velZ;
+  float i_term = this->KiPosZ * integratedAltitudeError;
   float b_z = R(2,2);
 
   float u_1_bar = p_term + d_term + i_term + accelZCmd;
