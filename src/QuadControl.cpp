@@ -107,8 +107,6 @@ V3F QuadControl::BodyRateControl(V3F pqrCmd, V3F pqr)
   V3F error = pqrCmd - pqr;
   V3F momIn(this->Ixx, this->Iyy, this->Izz);
   momentCmd = error * this->kpPQR * momIn;
-  
-
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
   return momentCmd;
@@ -151,7 +149,7 @@ V3F QuadControl::RollPitchControl(V3F accelCmd, Quaternion<float> attitude, floa
   } else {
     pqrCmd = 0.f;
   }
-  
+
   pqrCmd.z = 0;
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
@@ -183,43 +181,20 @@ float QuadControl::AltitudeControl(float posZCmd, float velZCmd, float posZ, flo
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
   float z_err = posZCmd - posZ;
-
-  float speedVertCmd = this->kpPosZ * z_err + velZCmd;
-  
-  // saturate speed command 
-  speedVertCmd = max(speedVertCmd, maxAscentRate);
-  speedVertCmd = min(speedVertCmd, -maxDescentRate);
-
-  float z_dot_err = speedVertCmd - velZ;
- 
-
-  float accel = this->kpVelZ * z_dot_err + accelZCmd;
-
-  float ascentRate = accel * dt;
-  if (abs(ascentRate) > this->maxDescentRate)
-  {
-    accel = accel * maxDescentRate / ascentRate;
-  } 
-  else if (abs(ascentRate) > this->maxAscentRate) 
-  {
-    accel = accel * maxAscentRate / ascentRate;
-  }
-
   float p_term = this->kpPosZ * z_err;
-
-  z_dot_err = velZCmd - velZ;
+  
   integratedAltitudeError += z_err * dt;
-
-
-  float d_term = this->kpVelZ * z_dot_err + velZ;
   float i_term = this->KiPosZ * integratedAltitudeError;
+  float z_dot_err = CONSTRAIN(velZCmd, - maxAscentRate, maxAscentRate) - velZ;
+
+  //float z_dot_err = velZCmd - velZ;
+  float d_term = this->kpVelZ * z_dot_err + velZ;
+
+
   float b_z = R(2,2);
-
   float u_1_bar = p_term + d_term + i_term + accelZCmd;
-
   float acc = ( u_1_bar - CONST_GRAVITY ) / b_z;
-
-  thrust = - mass * CONSTRAIN(acc, - maxAscentRate / dt, maxAscentRate / dt);
+  thrust = - mass * acc;
   /////////////////////////////// END STUDENT CODE ////////////////////////////
   
   return thrust;
