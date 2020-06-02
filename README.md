@@ -1,13 +1,71 @@
 # The C++ Project Readme #
 
-This is the readme for the C++ project.
+This is the readme for the C++ Quad Controller project.  For sake of evaluation the rubric items will be discussed first after this brief introduction.  This project was written in C++ and started with base classes for quad controllers and quad-copter.  A custom simulation envrionment was provided to assist in building a set of state controllers and evaluating and tuning control parameters.
 
 For easy navigation throughout this document, here is an outline:
 
+ - [Rubric Items](#rubric-items)
  - [Development environment setup](#development-environment-setup)
  - [Simulator walkthrough](#simulator-walkthrough)
  - [The tasks](#the-tasks)
  - [Evaluation](#evaluation)
+
+
+## Rubric Items ##
+1. Provide a Writeup / README that includes all the rubric points and how you addressed each one. You can submit your writeup as markdown or pdf.
+  You're reading it!  The writeup / README should include a statement and supporting figures / images that explain how each rubric item was addressed, and specifically where in the code each step was handled.
+
+2. Implemented body rate control in C++.
+
+  The controller should be a proportional controller on body rates to commanded moments. The controller should take into account the moments of inertia of the drone when calculating the commanded moments.
+  
+  The BodyRateControl method found in QuadControl.cpp takes in the desired body rates and the current body rates in V3F structs.  These are pqr body frame rotation rates.  The error is calculated and a simple proportional controller is implemented with takes into account the moment of inertia about each axis and the P-gain for PQR.
+
+3. Implement roll pitch control in C++.
+
+  The controller should use the acceleration and thrust commands, in addition to the vehicle attitude to output a body rate command. The controller should account for the non-linear transformation from local accelerations to body rates. Note that the drone's mass should be accounted for when calculating the target angles.
+
+  The RollPitchControl method takes in the attitude of the vehicle, the collective thrust command of the vehicle and a V3F for the acceleration commands in global coordinates.  The first check is whether the collective thrust command is greater than zero since the rotors cannot exert a negative thrust in this model.  The collective thrust is turned into a z-axis acceleration and then divided into the x and y components to produce body tilt commands that are saturated by the drones maxiumum tilt angles for stability.
+
+  The error between the commanded tilt and the rotation matrix's tilt is used by the state space equation to determine the the required commanded pqr roll and pitch rates.  The yaw rate is set to zero as this is independent for stable flight.
+
+4. Implement altitude controller in C++.
+
+  The controller should use both the down position and the down velocity to command thrust. Ensure that the output value is indeed thrust (the drone's mass needs to be accounted for) and that the thrust includes the non-linear effects from non-zero roll/pitch angles.  Additionally, the C++ altitude controller should contain an integrator to handle the weight non-idealities presented in scenario 4.
+
+  Initially a PD-controller was implemented to handle the altitude control but was expanded upon to include an integral term to address situations where the model didn't have the correct mass loaded.  The desired position and velocity are fed into the model along with the measured position and velocity, time step between measurements (loop rate), feed forward z-acceleration and the attitude of the vehicle to get the rotation matrix.
+
+  The position error is calculated and fed into the P-term, the integratedAltitudeError is summed from a public member variable stored beetween loops to calculate the I-term and the velocity error, with velocity constrained is calculated to determine the D-term.  The desired acceleration command is then calculated by summing forces and using the rotation matrix.  The thrust is then calculated.
+  
+5. Implement lateral position control in C++.
+
+The controller should use the local NE position and velocity to generate a commanded local acceleration.
+
+The LateralPositionControl method takes in the position and velocity commands as well as the position and velocity measurements and the feed-froward acceleration command and outputs the desired acceleration in NED body frame coordinates.  A different approach to constrauning the velocity was used here instead of using the built in function to show a different method of doing so.  The accleration command and velocity command were both determined while observing the drones limits.  The implemntation was a P controller controlling both position and velocity.
+
+6. Implement yaw control in C++.
+
+The controller can be a linear/proportional heading controller to yaw rate commands (non-linear transformation not required).
+
+The yawControl method was a simple angular position controller whose outout was the yaw-rate in order to control position.  The yaw command and yaw measurement are fed in to determine the error and in order to ensure the continuous angle measurement doesn't cause a problem the radians are saturated within +/- pi radians.
+
+
+7. Implement calculating the motor commands given commanded thrust and moments in C++.
+
+The thrust and moments should be converted to the appropriate 4 different desired thrust forces for the moments. Ensure that the dimensions of the drone are properly accounted for when calculating thrust from moments.
+
+The GenerateMotorCommands method decomposes the collectuve thrust command and moment command about each axis to generate four motor thrusts.  The moment arm lenth needs to be calculated and then the p-q-r-c thrusts are calculated.  Based on the rotation matrix each of the motor thrusts is calculated. 
+
+
+8. Your C++ controller is successfully able to fly the provided test trajectory and visually passes inspection of the scenarios leading up to the test trajectory.
+
+Ensure that in each scenario the drone looks stable and performs the required task. Specifically check that the student's controller is able to handle the non-linearities of scenario 4 (all three drones in the scenario should be able to perform the required task with the same control gains used).
+
+Check, the drone meet the required trajectories provided after tuning the controllers.
+
+
+
+
 
 
 ## Development Environment Setup ##
