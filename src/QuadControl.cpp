@@ -187,13 +187,12 @@ float QuadControl::AltitudeControl(float posZCmd, float velZCmd, float posZ, flo
   float i_term = this->KiPosZ * integratedAltitudeError;
   float z_dot_err = CONSTRAIN(velZCmd, - maxAscentRate, maxAscentRate) - velZ;
 
-  //float z_dot_err = velZCmd - velZ;
   float d_term = this->kpVelZ * z_dot_err + velZ;
 
 
   float b_z = R(2,2);
   float u_1_bar = p_term + d_term + i_term + accelZCmd;
-  float acc = ( u_1_bar - CONST_GRAVITY ) / b_z;
+  float acc = (u_1_bar - CONST_GRAVITY) / b_z;
   thrust = - mass * acc;
   /////////////////////////////// END STUDENT CODE ////////////////////////////
   
@@ -232,7 +231,7 @@ V3F QuadControl::LateralPositionControl(V3F posCmd, V3F velCmd, V3F pos, V3F vel
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
   V3F velocity_CMD = kpPosXY * (posCmd - pos);
 
-  float velocity_norm = sqrt(velocity_CMD.x * velocity_CMD.x + velocity_CMD.y * velocity_CMD.y);
+  float velocity_norm = sqrt(velCmd.x * velCmd.x + velCmd.y * velCmd.y);
 
   if (velocity_norm > maxSpeedXY) 
   {
